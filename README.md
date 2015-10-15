@@ -1,4 +1,4 @@
-# dplyrnz
+#  dplyrnz : dplyr SQL backend for Netezza
 
 R package that extends dplyr and provides SQL backend to Netezza (tested on V6.0.8).
 
