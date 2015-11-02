@@ -443,24 +443,24 @@ db_insert_into.NetezzaConnection <- function(con, table, values, ...) {
     rows <- apply(col_mat, 1, paste0, collapse = ", ")
     values <- paste0("INSERT INTO ", ident(table), " VALUES ", "(", rows, ")", collapse = ";\n")
     sql <- build_sql(sql(values))
-    sqlQuery(con@conn, sql)
+    send_query(con@conn, sql)
 }
 
 #' @export
 copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
-                                temporary=FALSE, fast.load=TRUE, ...) {
+                                temporary=FALSE, replace=FALSE, ...) {
     assert_that(is.data.frame(df), is.string(name))
 
     name <- toupper(name)
 
-#    if (db_has_table(dest$con, name)) {
-#        warning(name, " already exists.")
-#        ans <- readline(prompt = paste0("Replace existing table named `", name, "`?(y/n) "))
-#        if(substring(ans,1,1) != "y" && substring(ans,1,1) == "Y") return()
-#        else db_drop_table(dest$con, name)
-#    }
+
     if (db_has_table(dest$con, name)) {
-        stop(name, " already exists.")
+        if (replace) {
+            warning(name, " already exists and replaced.")
+            db_drop_table(dest$con, name)
+        } else {
+            stop(name, " already exists")
+        }
     }
 
     types <- db_data_type(dest$con, df)
@@ -474,4 +474,19 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     db_create_table_from_file.NetezzaConnection(dest$con, name, types, tmpfilename, temporary=FALSE)
     # file.remove(tmpfilename)
     tbl(dest, name)
+}
+
+#' @export
+db_drop_table.src_netezza <- function(src, table, force = FALSE, ...) {
+  db_drop_table(src$con, table, force, ...)
+}
+
+#' @export
+db_drop_table.NetezzaConnection <- function(con, table, force = FALSE, ...) {
+  assert_that(is.string(table))
+
+  if(!db_has_table(con, table)) stop("Table does not exist in database.")
+
+  sql <- build_sql("DROP TABLE ", ident_schema_table(table), con = con)
+  send_query(con@conn, sql)
 }
