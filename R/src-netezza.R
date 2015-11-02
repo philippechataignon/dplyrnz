@@ -472,7 +472,7 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
     write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')
     db_create_table_from_file.NetezzaConnection(dest$con, name, types, tmpfilename, temporary=FALSE)
-    # file.remove(tmpfilename)
+    file.remove(tmpfilename)
     tbl(dest, name)
 }
 
