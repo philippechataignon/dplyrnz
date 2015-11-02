@@ -117,31 +117,8 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
 )
 
 #' @export
-db_create_table.src_netezza <- function(src, table, types, temporary=FALSE, ...)
-{
-  db_create_table(src$con, table, types, temporary, ...)
-}
-
-#' @export
-db_create_table.NetezzaConnection <- function(con, table, types, temporary=FALSE, ...) {
-  assertthat::assert_that(assertthat::is.string(table), is.character(types))
-  if(db_has_table(con, table)) stop("Table name already exists")
-
-  field_names <- escape(ident(names(types)), collapse = NULL, con = con)
-  fields <- dplyr:::sql_vector(paste0(field_names, " ", types), parens = TRUE,
-                               collapse = ", ", con = con)
-
-  sql <- build_sql("CREATE ", if(temporary) sql("TEMPORARY "), "TABLE ", ident_schema_table(table), " ", fields, con = con)
-
-  send_query(con@conn, sql)
-
-  if(!db_has_table(con, table)) stop("Could not create table; are the data types specified in Netezza-compatible format?")
-}
-
-
-#' @export
 db_list_tables.NetezzaConnection <- function(con) {
-  tbl_query <- "SELECT tablename FROM _v_table WHERE objtype = 'TABLE'"
+  tbl_query <- "SELECT tablename FROM _v_table WHERE objtype in ('TABLE', 'VIEW', 'SYNONYM')"
   res <- sqlQuery(con@conn,tbl_query,believeNRows = FALSE)
   res[[1]]
 }
@@ -207,6 +184,11 @@ sql_escape_ident.NetezzaConnection <- function(con, x) {
 sql_escape_string.NetezzaConnection <- function(con, x) {
     sql_quote(x, "'")
 }
+
+ident_schema_table <- function(tablename) {
+    build_sql('PUBLIC', ".", tablename)
+}
+
 
 ### Select
 
@@ -376,4 +358,70 @@ sql_set_op.NetezzaConnection <- function(con, x, y, method) {
   )
   attr(sql, "vars") <- x$select
   sql
+}
+
+db_data_type <- function(con, fields) UseMethod("db_data_type")
+
+#' @export
+db_data_type.NetezzaConnection <- function(con, fields, ...) {
+    vapply(fields, dbDataType, FUN.VALUE=character(1))
+}
+
+dbDataType <- function(column, ...) {
+    if (is.integer(column))
+        return("INTEGER")
+    if (is.numeric(column))
+        return("DOUBLE")
+    if (is.character(column) || is.factor(column)) {
+        if (is.factor(column))
+            column <- levels(column)
+        len  <- max(nchar(column))
+        type <- ifelse(any(Encoding(column) == "UTF-8"), "NVARCHAR", "VARCHAR")
+        return(paste(type, "(", len, ")", sep=''))
+    }
+    stop("data type '", class(column), "' is not handled yet")
+}
+
+db_begin.NetezzaConnection <- function(con) {
+    return(T)
+}
+db_rollback.NetezzaConnection <- function(con) {
+    return(T)
+}
+db_commit.NetezzaConnection <- function(con) {
+    return(T)
+}
+
+db_analyze.NetezzaConnection <- function(con, name) {
+    return(T)
+}
+
+#' @export
+db_create_table.src_netezza <- function(src, table, types, temporary=FALSE, ...)
+{
+  db_create_table(src$con, table, types, temporary, ...)
+}
+
+#' @export
+db_create_table.NetezzaConnection <- function(con, table, types, temporary=FALSE, ...) {
+    assertthat::assert_that(assertthat::is.string(table), is.character(types))
+    field_names <- escape(ident(names(types)), collapse = NULL, con = con)
+    fields <- dplyr:::sql_vector(paste0(field_names, " ", types), parens = TRUE,
+                               collapse = ", ", con = con)
+    sql <- build_sql("CREATE ", "TABLE ", ident(table), " ", fields, con = con)
+    send_query(con@conn, sql)
+    if(!db_has_table(con, table)) stop("Could not create table; are the data types specified in Netezza-compatible format?")
+}
+
+#' @export
+db_insert_into.NetezzaConnection <- function(con, table, values, ...) {
+    if (nrow(values) == 0)
+        return(NULL)
+    cols <- lapply(values, escape, collapse = NULL, parens = FALSE, con = con)
+    col_mat <- matrix(unlist(cols, use.names = FALSE), nrow = nrow(values))
+
+    rows <- apply(col_mat, 1, paste0, collapse = ", ")
+    values <- paste0("INSERT INTO ", ident(table), " VALUES ", "(", rows, ")", collapse = ";\n")
+    sql <- build_sql(sql(values))
+    sqlQuery(con@conn, sql)
 }
