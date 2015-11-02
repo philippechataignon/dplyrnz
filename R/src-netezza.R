@@ -118,7 +118,7 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
 
 #' @export
 db_list_tables.NetezzaConnection <- function(con) {
-  tbl_query <- "SELECT tablename FROM _v_table WHERE objtype in ('TABLE', 'VIEW', 'SYNONYM')"
+  tbl_query <- "SELECT tablename FROM _v_table WHERE objtype='TABLE'"
   res <- sqlQuery(con@conn,tbl_query,believeNRows = FALSE)
   res[[1]]
 }
@@ -135,7 +135,7 @@ db_has_table.src_netezza <- function(src, table) {
 
 #' @export
 db_has_table.NetezzaConnection <- function(con, table) {
-  tbl_query <- paste0("SELECT count(*) N FROM _v_table WHERE objtype = 'TABLE' and tablename='", escape(ident(table)), "'")
+  tbl_query <- paste0("SELECT count(*) N FROM _v_table WHERE objtype = 'TABLE' and tablename=", escape(table))
   res <- sqlQuery(con@conn,tbl_query,believeNRows = FALSE)
   res$N > 0
 }
@@ -489,4 +489,5 @@ db_drop_table.NetezzaConnection <- function(con, table, force = FALSE, ...) {
 
   sql <- build_sql("DROP TABLE ", escape(ident(table)), con = con)
   send_query(con@conn, sql)
+  NULL
 }
