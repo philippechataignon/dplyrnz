@@ -118,9 +118,7 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
 
 #' @export
 db_list_tables.NetezzaConnection <- function(con) {
-  tbl_query <- "SELECT tablename FROM _v_table WHERE objtype='TABLE'"
-  res <- sqlQuery(con@conn,tbl_query,believeNRows = FALSE)
-  res[[1]]
+  sqlTables(con@conn)[[3]]
 }
 
 #' @export
@@ -135,16 +133,14 @@ db_has_table.src_netezza <- function(src, table) {
 
 #' @export
 db_has_table.NetezzaConnection <- function(con, table) {
-  tbl_query <- paste0("SELECT count(*) N FROM _v_table WHERE objtype = 'TABLE' and tablename=", escape(table))
-  res <- sqlQuery(con@conn,tbl_query,believeNRows = FALSE)
-  res$N > 0
+  table %in% db_list_tables(con)
 }
 
 #' @export
 db_query_fields.NetezzaConnection <- function(con, sql, ...){
   assertthat::assert_that(assertthat::is.string(sql), is.sql(sql))
   fields <- build_sql("SELECT * FROM ", sql, " WHERE 0=1")
-  qry <- sqlQuery(con@conn, fields,believeNRows = FALSE)
+  qry <- send_query(con@conn, fields)
   names(qry)
 }
 
@@ -153,14 +149,14 @@ db_query_rows.NetezzaConnection <- function(con, sql, ...) {
   assertthat::assert_that(assertthat::is.string(sql), is.sql(sql))
   from <- sql_subquery(con, sql, "master")
   rows <- paste0("SELECT count(*) FROM ", from)
-  as.integer(sqlQuery(con@conn, rows, believeNRows = FALSE)[[1]])
+  as.integer(send_query(con@conn, rows)[[1]])
 }
 
 # Explains queries
 #' @export
 db_explain.NetezzaConnection <- function(con, sql, ...) {
   exsql <- build_sql("EXPLAIN ", sql, con = con)
-  output <- send_query(con@conn, exsql, useGetQuery=TRUE)
+  output <- send_query(con@conn, exsql)
   output <- apply(output,1,function(x){
     if(substring(x,1,1) == "|") x = paste0("\n",x)
     if(x == "") x = "\n"
@@ -170,8 +166,8 @@ db_explain.NetezzaConnection <- function(con, sql, ...) {
 
 # Query
 
-send_query <- function(conn, query, useGetQuery=FALSE, ...) UseMethod("send_query")
+send_query <- function(conn, query, ...) UseMethod("send_query")
 
 send_query.RODBC <- function(conn, query, ...) {
-  sqlQuery(conn,query,believeNRows = FALSE)
+  sqlQuery(conn, query, believeNRows=FALSE)
 }
