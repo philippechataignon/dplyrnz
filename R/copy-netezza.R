@@ -51,7 +51,9 @@ db_create_table.NetezzaConnection <- function(con, table, types, temporary=FALSE
                                collapse = ", ", con = con)
     sql <- build_sql("CREATE ", "TABLE ", ident(table), " ", fields, con = con)
     send_query(con@conn, sql)
-    if(!db_has_table(con, table)) stop("Could not create table; are the data types specified in Netezza-compatible format?")
+    if(!db_has_table(con, table)) {
+        stop("Could not create table; are the data types specified in Netezza-compatible format?")
+    }
 }
 
 #' @export
@@ -112,7 +114,8 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     types <- db_data_type(dest$con, df)
     names(types) <- names(df)
 
-    if(temporary) warning("Copying to a temporary table is not supported. Writing to a permanent table.")
+    if(temporary) 
+        warning("Copying to a temporary table is not supported. Writing to a permanent table.")
 
     tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
     write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')
@@ -122,15 +125,15 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
 }
 
 #' @export
-db_drop_table.src_netezza <- function(src, table, force = FALSE, ...) {
-  db_drop_table(src$con, table, force, ...)
+db_drop_table.src_netezza <- function(src, table, ...) {
+  db_drop_table(src$con, table, ...)
 }
 
 #' @export
-db_drop_table.NetezzaConnection <- function(con, table, force = FALSE, ...) {
+db_drop_table.NetezzaConnection <- function(con, table, ...) {
   assert_that(is.string(table))
-
-  if(!db_has_table(con, table)) stop("Table does not exist in database.")
+  if(!db_has_table(con, table)) 
+    stop("Table does not exist in database.")
 
   sql <- build_sql("DROP TABLE ", escape(ident(table)), con = con)
   send_query(con@conn, sql)
