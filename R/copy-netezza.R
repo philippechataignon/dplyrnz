@@ -65,13 +65,19 @@ db_create_table_from_file.NetezzaConnection <- function(con, table, types, file.
     fields_var <- dplyr:::sql_vector(field_names, parens = F,
                                collapse = ", ", con = con)
     sql <- build_sql("CREATE ", "TABLE ", ident(table), " AS SELECT ", fields_var,
-                     " FROM EXTERNAL ", file.name, fields, " USING (delim ',' nullvalue '' QuotedValue DOUBLE remotesource 'ODBC')", con = con)
+                     " FROM EXTERNAL ", file.name, fields, 
+                     " USING (delim ',' nullvalue '' QuotedValue DOUBLE remotesource 'ODBC')",
+                con = con)
     send_query(con@conn, sql)
-    if(!db_has_table(con, table)) stop("Could not create table; are the data types specified in Netezza-compatible format?")
+
+    if(!db_has_table(con, table)) {
+        stop("Could not create table; are the data types specified in Netezza-compatible format?")
+    }
 }
 
 #' @export
 db_insert_into.NetezzaConnection <- function(con, table, values, ...) {
+    # very slow : only 1 row at a time
     if (nrow(values) == 0)
         return(NULL)
     cols <- lapply(values, escape, collapse = NULL, parens = FALSE, con = con)
@@ -85,11 +91,10 @@ db_insert_into.NetezzaConnection <- function(con, table, values, ...) {
 
 #' @export
 copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
-                                temporary=FALSE, replace=FALSE, ...) {
+            temporary=FALSE, replace=FALSE, ...) {
+
     assert_that(is.data.frame(df), is.string(name))
-
     name <- toupper(name)
-
 
     if (db_has_table(dest$con, name)) {
         if (replace) {
@@ -104,7 +109,6 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     names(types) <- names(df)
 
     if(temporary) warning("Copying to a temporary table is not supported. Writing to a permanent table.")
-
 
     tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
     write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')

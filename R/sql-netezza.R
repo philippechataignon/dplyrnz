@@ -1,18 +1,3 @@
-
-#' @export
-sql_escape_ident.NetezzaConnection <- function(con, x) {
-    sql_quote(x, '"')
-}
-#' @export
-sql_escape_string.NetezzaConnection <- function(con, x) {
-    sql_quote(x, "'")
-}
-
-ident_schema_table <- function(tablename) {
-    escape(ident(tablename))
-}
-
-
 ### Select
 
 #' @rdname backend_sql
@@ -81,6 +66,7 @@ sql_select.NetezzaConnection <- function(con, select, from, where = NULL,
 sql_subquery <- function(con, sql, name = random_table_name(), ...) {
   UseMethod("sql_subquery")
 }
+
 #' @export
 sql_subquery.NetezzaConnection <- function(con, sql, name = unique_name(), ...) {
   if (is.ident(sql)) return(sql)
@@ -93,6 +79,7 @@ sql_subquery.NetezzaConnection <- function(con, sql, name = unique_name(), ...) 
 sql_join <- function(con, x, y, type = "inner", by = NULL, ...) {
   UseMethod("sql_join")
 }
+
 #' @export
 sql_join.NetezzaConnection <- function(con, x, y, type = "inner", by = NULL, ...) {
   join <- switch(type,
@@ -148,6 +135,7 @@ sql_join.NetezzaConnection <- function(con, x, y, type = "inner", by = NULL, ...
 sql_semi_join <- function(con, x, y, anti = FALSE, by = NULL, ...) {
   UseMethod("sql_semi_join")
 }
+
 #' @export
 sql_semi_join.NetezzaConnection <- function(con, x, y, anti = FALSE, by = NULL, ...) {
   by <- dplyr:::common_by(by, x, y)
@@ -173,6 +161,7 @@ sql_semi_join.NetezzaConnection <- function(con, x, y, anti = FALSE, by = NULL, 
 sql_set_op <- function(con, x, y, method) {
   UseMethod("sql_set_op")
 }
+
 #' @export
 sql_set_op.NetezzaConnection <- function(con, x, y, method) {
   sql <- build_sql(
@@ -183,3 +172,20 @@ sql_set_op.NetezzaConnection <- function(con, x, y, method) {
   attr(sql, "vars") <- x$select
   sql
 }
+
+### escape
+
+#' @export
+sql_escape_ident.NetezzaConnection <- function(con, x) {
+    sql_quote(x, '"')
+}
+#' @export
+sql_escape_string.NetezzaConnection <- function(con, x) {
+    sql_quote(x, "'")
+}
+
+ident_schema_table <- function(tablename) {
+    escape(ident(tablename))
+}
+
+
