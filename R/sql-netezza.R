@@ -1,3 +1,7 @@
+#' @import assertthat
+#' @import RODBC
+#' @import dplyr
+
 ### Select
 
 #' @rdname backend_sql

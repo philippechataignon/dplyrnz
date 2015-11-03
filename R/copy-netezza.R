@@ -1,3 +1,7 @@
+#' @import assertthat
+#' @import RODBC
+#' @import dplyr
+
 db_data_type <- function(con, fields) UseMethod("db_data_type")
 
 db_data_type.NetezzaConnection <- function(con, fields, ...) {
