@@ -2,12 +2,9 @@
 % Please edit documentation in R/src-netezza.R
 \name{src_netezza}
 \alias{src_netezza}
-\alias{tbl.src_netezza}
 \title{Establishes a connection to Netezza and returns a dplyr 'src' object, src_netezza, using RODBC.}
 \usage{
 src_netezza(dsn)
-
-\method{tbl}{src_netezza}(src, from, ...)
 }
 \arguments{
 \item{dsn}{The name of the ODBC DSN to use for connecting to Netezza. Must be a string.}
@@ -21,6 +18,7 @@ Establishes a connection to Netezza and returns a dplyr 'src' object, src_netezz
 \examples{
 \dontrun{
 netezza_connection <- src_netezza(dsn="NetezzaDSN")
+table <- tbl(netezza_connection, 'TABLE_NAME')
 }
 }
 

@@ -37,7 +37,6 @@ src_netezza <- function(dsn) {
 }
 
 #' @export
-#' @rdname src_netezza
 tbl.src_netezza <- function(src, from, ...) {
     tbl_sql("netezza", src = src, from = from, ...)
 }
