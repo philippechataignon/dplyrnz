@@ -22,14 +22,7 @@ db_create_table.NetezzaConnection <- function(con, table, types, temporary=FALSE
     }
 }
 
-#' @export
-db_create_table_from_file.src_netezza <- function(src, table, types, file.name, temporary=FALSE, ...)
-{
-  db_create_table_from_file(src$con, table, types, file.name, temporary, ...)
-}
-
-#' @export
-db_create_table_from_file.NetezzaConnection <- function(con, table, types, file.name, temporary=FALSE, ...) {
+db_create_table_from_file <- function(con, table, types, file.name, temporary=FALSE, ...) {
     assertthat::assert_that(assertthat::is.string(table), is.character(types))
     field_names <- escape(ident(names(types)), collapse = NULL, con = con)
     fields <- dplyr:::sql_vector(paste0(field_names, " ", types), parens = TRUE,
@@ -85,7 +78,7 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
 
     tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
     write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')
-    db_create_table_from_file.NetezzaConnection(dest$con, name, types, tmpfilename, temporary=FALSE)
+    db_create_table_from_file(dest$con, name, types, tmpfilename, temporary=FALSE)
     file.remove(tmpfilename)
     tbl(dest, name)
 }

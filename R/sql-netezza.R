@@ -6,9 +6,17 @@
 
 #' @export
 sql_set_op.NetezzaConnection <- dplyr:::sql_set_op.DBIConnection
+
+#' @export
 sql_join.NetezzaConnection <- dplyr:::sql_join.DBIConnection
+
+#' @export
 sql_semi_join.NetezzaConnection <- dplyr:::sql_semi_join.DBIConnection
+
+#' @export
 sql_subquery.NetezzaConnection <- dplyr:::sql_subquery.DBIConnection
+
+#' @export
 sql_select.NetezzaConnection <- dplyr:::sql_select.DBIConnection
 
 ###

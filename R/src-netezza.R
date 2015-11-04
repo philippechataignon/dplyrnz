@@ -18,8 +18,8 @@ setClass("NetezzaConnection", representation = representation(conn = "ANY"))
 #' @import assertthat
 #' @import RODBC
 #' @import dplyr
-#' @export
 
+#' @export
 src_netezza <- function(dsn) {
     if (!requireNamespace("assertthat", quietly = TRUE)) {
         stop("assertthat package required", call. = FALSE)
@@ -40,7 +40,6 @@ src_netezza <- function(dsn) {
 tbl.src_netezza <- function(src, from, ...) {
     tbl_sql("netezza", src = src, from = from, ...)
 }
-
 
 # Describes the connection
 #' @export
