@@ -6,7 +6,6 @@
 #'
 #' @keywords internal
 #' @name nycflights13
-NULL
 
 #' @export
 #' @rdname nycflights13
