@@ -71,7 +71,7 @@ db_create_table_from_file.NetezzaConnection <- function(con, table, types, file.
     fields_var <- dplyr:::sql_vector(field_names, parens = F,
                                collapse = ", ", con = con)
     sql <- build_sql("CREATE ", "TABLE ", ident(table), " AS SELECT ", fields_var,
-                     " FROM EXTERNAL ", file.name, fields, 
+                     " FROM EXTERNAL ", file.name, fields,
                      " USING (delim ',' nullvalue '' QuotedValue DOUBLE remotesource 'ODBC')",
                 con = con)
     send_query(con@conn, sql)
@@ -99,7 +99,7 @@ db_insert_into.NetezzaConnection <- function(con, table, values, ...) {
 copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
             temporary=FALSE, replace=FALSE, ...) {
 
-    assert_that(is.data.frame(df), is.string(name))
+    assertthat::assert_that(is.data.frame(df), assertthat::is.string(name))
     name <- toupper(name)
 
     if (db_has_table(dest$con, name)) {
@@ -114,7 +114,7 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     types <- db_data_type(dest$con, df)
     names(types) <- names(df)
 
-    if(temporary) 
+    if(temporary)
         warning("Copying to a temporary table is not supported. Writing to a permanent table.")
 
     tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
@@ -131,8 +131,8 @@ db_drop_table.src_netezza <- function(src, table, ...) {
 
 #' @export
 db_drop_table.NetezzaConnection <- function(con, table, ...) {
-  assert_that(is.string(table))
-  if(!db_has_table(con, table)) 
+  assertthat::assert_that(assertthat::is.string(table))
+  if(!db_has_table(con, table))
     stop("Table does not exist in database.")
 
   sql <- build_sql("DROP TABLE ", escape(ident(table)), con = con)

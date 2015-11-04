@@ -10,7 +10,7 @@ NULL
 
 #' @export
 #' @rdname nycflights13
-copy_nycflights13 <- function(src, ...) {
+copy_nycflights13 <- function(src, replace=FALSE, ...) {
   all <- utils::data(package = "nycflights13")$results[, 3]
   tables <- setdiff(all, src_tbls(src))
 
@@ -18,7 +18,7 @@ copy_nycflights13 <- function(src, ...) {
   for(table in tables) {
     df <- getExportedValue("nycflights13", table)
     message("Creating table: ", table)
-    copy_to(src, df, table, temporary=FALSE, replace=T)
+    copy_to(src, df, table, temporary=FALSE, replace=replace)
   }
   src
 }
