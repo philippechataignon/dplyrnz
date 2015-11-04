@@ -12,6 +12,7 @@ setClass("NetezzaConnection", representation = representation(conn = "ANY"))
 #' @examples
 #' \dontrun{
 #' netezza_connection <- src_netezza(dsn="NetezzaDSN")
+#' table <- tbl(netezza_connection, 'TABLE_NAME')
 #' }
 #' @import methods
 #' @import assertthat

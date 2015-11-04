@@ -4,7 +4,6 @@
 
 ### Select
 
-#' @rdname backend_sql
 #' @export
 sql_select <- function(con, select, from, where = NULL, group_by = NULL,
   having = NULL, order_by = NULL, limit = NULL, offset = NULL, ...) {
@@ -66,7 +65,6 @@ sql_select.NetezzaConnection <- function(con, select, from, where = NULL,
 
 
 #' @export
-#' @rdname backend_sql
 sql_subquery <- function(con, sql, name = random_table_name(), ...) {
   UseMethod("sql_subquery")
 }
@@ -78,7 +76,6 @@ sql_subquery.NetezzaConnection <- function(con, sql, name = unique_name(), ...) 
   build_sql("(", sql, ") AS ", ident(name), con = con)
 }
 
-#' @rdname backend_sql
 #' @export
 sql_join <- function(con, x, y, type = "inner", by = NULL, ...) {
   UseMethod("sql_join")
@@ -134,7 +131,6 @@ sql_join.NetezzaConnection <- function(con, x, y, type = "inner", by = NULL, ...
   from
 }
 
-#' @rdname backend_sql
 #' @export
 sql_semi_join <- function(con, x, y, anti = FALSE, by = NULL, ...) {
   UseMethod("sql_semi_join")
@@ -160,7 +156,6 @@ sql_semi_join.NetezzaConnection <- function(con, x, y, anti = FALSE, by = NULL, 
   from
 }
 
-#' @rdname backend_sql
 #' @export
 sql_set_op <- function(con, x, y, method) {
   UseMethod("sql_set_op")
