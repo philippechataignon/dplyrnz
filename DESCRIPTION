@@ -7,6 +7,9 @@ Author: Philippe Chataignon
 Maintainer: Philippe Chataignon <philippe.chataignon@justice.gouv.fr>
 Description: Netezza SQL backend for dplyr
 License: GPL
+Suggests:
+    testthat,
+    nycflights13
 Imports:
     assertthat,
     R6,
