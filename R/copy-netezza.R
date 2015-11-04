@@ -2,40 +2,6 @@
 #' @import RODBC
 #' @import dplyr
 
-db_data_type <- function(con, fields) UseMethod("db_data_type")
-
-db_data_type.NetezzaConnection <- function(con, fields, ...) {
-    vapply(fields, dbDataType, FUN.VALUE=character(1))
-}
-
-dbDataType <- function(column, ...) {
-    if (is.integer(column))
-        return("INTEGER")
-    if (is.numeric(column))
-        return("DOUBLE")
-    if (is.character(column) || is.factor(column)) {
-        if (is.factor(column))
-            column <- levels(column)
-        len  <- max(nchar(column))
-        type <- ifelse(any(Encoding(column) == "UTF-8"), "NVARCHAR", "VARCHAR")
-        return(paste(type, "(", len, ")", sep=''))
-    }
-    stop("data type '", class(column), "' is not handled yet")
-}
-
-db_begin.NetezzaConnection <- function(con) {
-    return(T)
-}
-db_rollback.NetezzaConnection <- function(con) {
-    return(T)
-}
-db_commit.NetezzaConnection <- function(con) {
-    return(T)
-}
-
-db_analyze.NetezzaConnection <- function(con, name) {
-    return(T)
-}
 
 #' @export
 db_create_table.src_netezza <- function(src, table, types, temporary=FALSE, ...)
