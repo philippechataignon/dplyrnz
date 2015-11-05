@@ -117,7 +117,7 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
 
 #' @export
 db_list_tables.NetezzaConnection <- function(con) {
-  sqlTables(con@conn)[[3]]
+  sqlTables(con@conn)$TABLE_NAME
 }
 
 #' @export
