@@ -8,7 +8,10 @@ setClass("NetezzaConnection", representation = representation(conn = "ANY"))
 #' Establishes a connection to Netezza and returns a dplyr 'src' object, src_netezza, using RODBC.
 #'
 #' @param dsn The name of the ODBC DSN to use for connecting to Netezza. Must be a string.
-#' @return A dplyr::src object, src_netezza, to be used with dplyr functions.
+#' @param db  The name of the database if not in DSN definition (optional)
+#' @param uid The name of the user if not in DSN definition (optional)
+#' @param pwd The password if not in DSN definition (optional)
+#' @return A dplyr::src object, dplyr::src_sql, src_netezza, to be used with dplyr functions.
 #' @examples
 #' \dontrun{
 #' netezza_connection <- src_netezza(dsn="NetezzaDSN")
@@ -28,7 +31,6 @@ src_netezza <- function(dsn, db=NULL, uid=NULL, pwd=NULL, ...) {
         stop("RODBC package required to connect to Netezza ODBC", call. = FALSE)
     }
     assertthat::assert_that(assertthat::is.string(dsn))
-    RODBC::odbcCloseAll()
 
     st <- paste0("DSN=", dsn)
     if (!is.null(uid)) {
