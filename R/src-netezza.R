@@ -46,7 +46,7 @@ src_netezza <- function(dsn, db=NULL, uid=NULL, pwd=NULL, ...) {
     conn <- RODBC::odbcDriverConnect(st, ...)
     info <- RODBC::odbcGetInfo(conn)
     con <- .NetezzaConnection(conn=conn)
-    vsrc <- src_sql("netezza", con = con, info = info)
+    vsrc <- src_sql("netezza", con = con, info = info, disco = db_disconnector(con, "netezza"))
     vsrc
 }
 
@@ -163,6 +163,19 @@ db_query_rows.NetezzaConnection <- function(con, sql, ...) {
   from <- sql_subquery(con, sql, "master")
   rows <- build_sql("SELECT count(*) FROM ", from, con=con)
   as.integer(send_query(con@conn, rows)[[1]])
+}
+
+# Disconnect
+
+db_disconnector <- function(con, name, quiet = FALSE) {
+  reg.finalizer(environment(), function(...) {
+    if (!quiet) {
+        message("Auto-disconnecting ", name, " connection ",
+            "(", paste(con@conn, collapse = ", "), ")")
+    }
+    odbcClose(con@conn)
+    })
+  environment()
 }
 
 # Explains queries
