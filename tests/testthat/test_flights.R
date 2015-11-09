@@ -5,7 +5,7 @@ db_drop_table(s, 'AIRPORTS')
 db_drop_table(s, 'FLIGHTS')
 db_drop_table(s, 'PLANES')
 db_drop_table(s, 'WEATHER')
-copy_nycflights13(s, index=NULL)
+copy_nycflights13(s)
 
 fl <- tbl(s, 'FLIGHTS')
 fl  %>% filter(origin %in% c('LGA', 'EWR')) %>% tally() %>% collect()  %>% as.numeric() -> eff2

@@ -56,7 +56,7 @@ db_insert_into.NetezzaConnection <- function(con, table, values, ...) {
 
 #' @export
 copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
-            temporary=FALSE, replace=FALSE, ...) {
+            temporary=TRUE, indexes=NULL, analyse=TRUE, replace=FALSE, ...) {
 
     assertthat::assert_that(is.data.frame(df), assertthat::is.string(name))
     name <- toupper(name)
@@ -73,8 +73,9 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     types <- db_data_type(dest$con, df)
     names(types) <- names(df)
 
-    if(temporary)
-        warning("Copying to a temporary table is not supported. Writing to a permanent table.")
+    if(temporary) {
+        warning("Copying to a temporary table is not supported yet.\n Writing to permanent table : ", name)
+    }
 
     tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
     write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')
