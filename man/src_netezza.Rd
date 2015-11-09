@@ -4,13 +4,19 @@
 \alias{src_netezza}
 \title{Establishes a connection to Netezza and returns a dplyr 'src' object, src_netezza, using RODBC.}
 \usage{
-src_netezza(dsn)
+src_netezza(dsn, db = NULL, uid = NULL, pwd = NULL, ...)
 }
 \arguments{
 \item{dsn}{The name of the ODBC DSN to use for connecting to Netezza. Must be a string.}
+
+\item{db}{The name of the database if not in DSN definition (optional)}
+
+\item{uid}{The name of the user if not in DSN definition (optional)}
+
+\item{pwd}{The password if not in DSN definition (optional)}
 }
 \value{
-A dplyr::src object, src_netezza, to be used with dplyr functions.
+A dplyr::src object, dplyr::src_sql, src_netezza, to be used with dplyr functions.
 }
 \description{
 Establishes a connection to Netezza and returns a dplyr 'src' object, src_netezza, using RODBC.
