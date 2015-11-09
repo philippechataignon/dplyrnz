@@ -150,7 +150,7 @@ db_has_table.NetezzaConnection <- function(con, table) {
 #' @export
 db_query_fields.NetezzaConnection <- function(con, sql, ...){
   assertthat::assert_that(assertthat::is.string(sql), is.sql(sql))
-  fields <- build_sql("SELECT * FROM ", sql, " WHERE 0=1")
+  fields <- build_sql("SELECT * FROM ", sql, " LIMIT 0")
   qry <- send_query(con@conn, fields)
   names(qry)
 }
