@@ -74,6 +74,7 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     names(types) <- names(df)
 
     if(temporary) {
+        name <- paste0('TMP_', name)
         warning("Copying to a temporary table is not supported yet.\n Writing to permanent table : ", name)
     }
 
