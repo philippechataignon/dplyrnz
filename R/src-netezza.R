@@ -20,7 +20,7 @@ setClass("NetezzaConnection", representation = representation(conn = "ANY"))
 #' @import dplyr
 
 #' @export
-src_netezza <- function(dsn) {
+src_netezza <- function(dsn, db=NULL, uid=NULL, pwd=NULL, ...) {
     if (!requireNamespace("assertthat", quietly = TRUE)) {
         stop("assertthat package required", call. = FALSE)
     }
@@ -29,7 +29,19 @@ src_netezza <- function(dsn) {
     }
     assertthat::assert_that(assertthat::is.string(dsn))
     RODBC::odbcCloseAll()
-    conn <- RODBC::odbcConnect(dsn)
+
+    st <- paste0("DSN=", dsn)
+    if (!is.null(uid)) {
+        st <- paste0(st, ";UID=", uid)
+    }
+    if (!is.null(pwd)) {
+        st <- paste0(st, ";PWD=", pwd)
+    }
+    if (!is.null(db)) {
+        st <- paste0(st, ";Database=", db)
+    }
+
+    conn <- RODBC::odbcDriverConnect(st, ...)
     info <- RODBC::odbcGetInfo(conn)
     con <- .NetezzaConnection(conn=conn)
     vsrc <- src_sql("netezza", con = con, info = info)
