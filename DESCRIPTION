@@ -1,7 +1,7 @@
 Package: dplyrnz
 Type: Package
 Title: Netezza SQL backend for dplyr
-Version: 0.5.1
+Version: 0.5.2
 Date: 2015-11-10
 Author: Philippe Chataignon
 Maintainer: Philippe Chataignon <philippe.chataignon@justice.gouv.fr>
