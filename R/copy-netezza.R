@@ -98,5 +98,5 @@ db_drop_table.NetezzaConnection <- function(con, table, ...) {
 
   sql <- build_sql("DROP TABLE ", escape(ident(table)), con = con)
   send_query(con@conn, sql)
-  NULL
+  invisible(0)
 }
