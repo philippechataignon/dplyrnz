@@ -190,7 +190,12 @@ db_explain.NetezzaConnection <- function(con, sql, ...) {
   })
 }
 
-# Explains queries
+# Analyse
+#' @export
+db_analyze.src_netezza <- function(src, table, ...) {
+  db_analyze(src$con, table, ...)
+}
+
 #' @export
 db_analyze.NetezzaConnection <- function(con, table, ...) {
   sql <- build_sql("GENERATE STATISTICS ON ", ident(table), con=con)
