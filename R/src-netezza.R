@@ -193,8 +193,12 @@ db_explain.NetezzaConnection <- function(con, sql, ...) {
 # Save
 #' @export
 db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ...) {
+    if(temporary) {
+        warning("Creating temporary tables is not supported.\n Saving as a permanent table : ", name)
+    }
     ct_sql <- build_sql("CREATE TABLE ", ident(name), " AS (", sql, ")", con = con)
-    res <- send_query(con@conn, ct_sql)
+    send_query(con@conn, ct_sql)
+    name
 }
 
 # Query
