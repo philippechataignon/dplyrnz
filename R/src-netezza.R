@@ -190,6 +190,13 @@ db_explain.NetezzaConnection <- function(con, sql, ...) {
   })
 }
 
+# Save
+#' @export
+db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ...) {
+    ct_sql <- build_sql("CREATE TABLE ", ident(name), " AS (", sql, ")", con = con)
+    res <- send_query(con@conn, ct_sql)
+}
+
 # Query
 
 send_query <- function(conn, query, ...) UseMethod("send_query")
