@@ -1,11 +1,7 @@
 library(nycflights13)
 s <- src_netezza('NZN')
-db_drop_table(s, 'AIRLINES')
-db_drop_table(s, 'AIRPORTS')
-db_drop_table(s, 'FLIGHTS')
-db_drop_table(s, 'PLANES')
-db_drop_table(s, 'WEATHER')
-copy_nycflights13(s)
+#copy_nycflights13(s)
+copy_to(s, flights, name='FLIGHTS', temporary = F)
 
 fl <- tbl(s, 'FLIGHTS')
 fl  %>% filter(origin %in% c('LGA', 'EWR')) %>% tally() %>% collect()  %>% as.numeric() -> eff2

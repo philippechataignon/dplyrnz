@@ -52,7 +52,8 @@ db_commit.NetezzaConnection <- function(con) {
     return(T)
 }
 
-db_analyze.NetezzaConnection <- function(con, name) {
+db_create_index <- function(con, name) {
+    warning("No indexes in Netezza")
     return(T)
 }
 

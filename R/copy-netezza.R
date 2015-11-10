@@ -56,7 +56,7 @@ db_insert_into.NetezzaConnection <- function(con, table, values, ...) {
 
 #' @export
 copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
-            temporary=TRUE, indexes=NULL, analyse=TRUE, replace=FALSE, ...) {
+            temporary=TRUE, indexes=NULL, analyze=TRUE, replace=FALSE, ...) {
 
     assertthat::assert_that(is.data.frame(df), assertthat::is.string(name))
     name <- toupper(name)
@@ -82,6 +82,9 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')
     db_create_table_from_file(dest$con, name, types, tmpfilename, temporary=FALSE)
     file.remove(tmpfilename)
+    if (analyze) {
+        db_analyze(dest$con, name)
+    }
     tbl(dest, name)
 }
 
