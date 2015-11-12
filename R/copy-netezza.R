@@ -15,7 +15,8 @@ db_create_table.NetezzaConnection <- function(con, table, types, temporary=FALSE
     field_names <- escape(ident(names(types)), collapse = NULL, con = con)
     fields <- dplyr:::sql_vector(paste0(field_names, " ", types), parens = TRUE,
                                collapse = ", ", con = con)
-    sql <- build_sql("CREATE ", "TABLE ", ident(table), " ", fields, con = con)
+    sql <- build_sql("CREATE ", if (temporary) sql("TEMPORARY "), "TABLE ", 
+                     ident(table), " ", fields, con = con)
     send_query(con@conn, sql)
     if(!db_has_table(con, table)) {
         stop("Could not create table; are the data types specified in Netezza-compatible format?")
@@ -29,7 +30,8 @@ db_create_table_from_file <- function(con, table, types, file.name, temporary=FA
                                collapse = ", ", con = con)
     fields_var <- dplyr:::sql_vector(field_names, parens = F,
                                collapse = ", ", con = con)
-    sql <- build_sql("CREATE ", "TABLE ", ident(table), " AS SELECT ", fields_var,
+    sql <- build_sql("CREATE ", if (temporary) sql("TEMPORARY "), "TABLE ", 
+                     ident(table), " AS SELECT ", fields_var,
                      " FROM EXTERNAL ", file.name, fields,
                      " USING (delim ',' nullvalue '' QuotedValue DOUBLE remotesource 'ODBC')",
                 con = con)
@@ -73,14 +75,9 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
     types <- db_data_type(dest$con, df)
     names(types) <- names(df)
 
-    if(temporary) {
-        name <- paste0('TMP_', name)
-        warning("Copying to a temporary table is not supported yet.\n Writing to permanent table : ", name)
-    }
-
     tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
     write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')
-    db_create_table_from_file(dest$con, name, types, tmpfilename, temporary=FALSE)
+    db_create_table_from_file(dest$con, name, types, tmpfilename, temporary=temporary)
     file.remove(tmpfilename)
     if (analyze) {
         db_analyze(dest$con, name)
