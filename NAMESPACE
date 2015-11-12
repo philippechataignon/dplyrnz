@@ -2,6 +2,7 @@
 
 S3method(copy_to,src_netezza)
 S3method(db_analyze,NetezzaConnection)
+S3method(db_analyze,src_netezza)
 S3method(db_create_table,NetezzaConnection)
 S3method(db_create_table,src_netezza)
 S3method(db_drop_table,NetezzaConnection)
