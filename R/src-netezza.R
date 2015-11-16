@@ -71,7 +71,8 @@ src_translate_env.src_netezza <- function(x) {
             n = function() sql("count(*)"),
             sd = sql_prefix("stddev"),
             var = sql_prefix("variance")
-        )
+        ),
+        base_win
     )
 }
 
