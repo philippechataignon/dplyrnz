@@ -21,8 +21,6 @@ sql_select.NetezzaConnection <- dplyr:::sql_select.DBIConnection
 
 ###
 
-db_data_type <- function(con, fields) UseMethod("db_data_type")
-
 db_data_type.NetezzaConnection <- function(con, fields, ...) {
     vapply(fields, dbDataType, FUN.VALUE=character(1))
 }
@@ -56,7 +54,6 @@ db_create_index <- function(con, name) {
     warning("No indexes in Netezza")
     return(T)
 }
-
 
 ### escape
 

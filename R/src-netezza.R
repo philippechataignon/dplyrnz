@@ -214,8 +214,6 @@ db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ..
 
 # Query
 
-send_query <- function(conn, query, ...) UseMethod("send_query")
-
-send_query.RODBC <- function(conn, query, ...) {
+send_query <- function(conn, query, ...) {
   sqlQuery(conn, query, believeNRows=FALSE)
 }
