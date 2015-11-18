@@ -18,6 +18,7 @@ setClass("NetezzaConnection", representation = representation(conn = "ANY"))
 #' table <- tbl(netezza_connection, 'TABLE_NAME')
 #' }
 #' @import methods
+#' @import R6
 #' @import assertthat
 #' @import RODBC
 #' @import dplyr
