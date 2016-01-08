@@ -63,7 +63,6 @@ src_desc.src_netezza <- function(x) {
     paste0("Netezza ODBC - DSN:", info["Data_Source_Name"], " - Host:", info["Server_Name"])
 }
 
-
 #' @export
 src_translate_env.src_netezza <- function(x) {
     sql_variant(
@@ -103,11 +102,8 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
       print(self$con)
     },
 
-    fetch = function(n = -1L) {
-        out <- sqlQuery(self$con@conn, self$sql, n, believeNRows = FALSE)
-        i <- sapply(out, is.factor)
-        out[i] <- lapply(out[i], as.character)
-      out
+    fetch = function() {
+        send_query(self$con@conn, self$sql)
     },
 
     fetch_paged = function(chunk_size = 1e4, callback) {
@@ -207,7 +203,7 @@ db_analyze.NetezzaConnection <- function(con, table, ...) {
 # Save
 #' @export
 db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ...) {
-    ct_sql <- build_sql("CREATE ", if (temporary) sql("TEMPORARY "), "TABLE ", 
+    ct_sql <- build_sql("CREATE ", if (temporary) sql("TEMPORARY "), "TABLE ",
                         ident(name), " AS (", sql, ")", con = con)
     send_query(con@conn, ct_sql)
     name
@@ -216,5 +212,5 @@ db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ..
 # Query
 
 send_query <- function(conn, query, ...) {
-  sqlQuery(conn, query, believeNRows=FALSE)
+  sqlQuery(conn, query, believeNRows=FALSE, as.is=T)
 }
