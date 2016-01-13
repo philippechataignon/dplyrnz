@@ -102,8 +102,8 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
       print(self$con)
     },
 
-    fetch = function() {
-        send_query(self$con@conn, self$sql)
+    fetch = function(n = -1L) {
+        send_query(self$con@conn, self$sql, n)
     },
 
     fetch_paged = function(chunk_size = 1e4, callback) {
@@ -211,6 +211,6 @@ db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ..
 
 # Query
 
-send_query <- function(conn, query, ...) {
-  sqlQuery(conn, query, believeNRows=FALSE, as.is=T)
+send_query <- function(conn, query, n=-1L, ...) {
+  sqlQuery(conn, query, believeNRows=FALSE)
 }
