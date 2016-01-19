@@ -47,8 +47,7 @@ src_netezza <- function(dsn, db=NULL, uid=NULL, pwd=NULL, ...) {
     conn <- RODBC::odbcDriverConnect(st, ...)
     info <- RODBC::odbcGetInfo(conn)
     con <- .NetezzaConnection(conn=conn)
-    vsrc <- src_sql("netezza", con = con, info = info, disco = db_disconnector(con, "netezza"))
-    vsrc
+    src_sql("netezza", con = con, info = info, disco = db_disconnector(con, "netezza"))
 }
 
 #' @export
@@ -68,7 +67,7 @@ src_translate_env.src_netezza <- function(x) {
     sql_variant(
         base_scalar,
         sql_translator(.parent = base_agg,
-            n = function() sql("count(*)"),
+            n = function() sql("count(*)::integer"),
             sd = sql_prefix("stddev"),
             var = sql_prefix("variance")
         ),
@@ -103,7 +102,7 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
     },
 
     fetch = function(n = -1L) {
-        send_query(self$con@conn, self$sql, n)
+        send_query(self$con@conn, self$sql)
     },
 
     fetch_paged = function(chunk_size = 1e4, callback) {
@@ -129,7 +128,10 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
 
 #' @export
 db_list_tables.NetezzaConnection <- function(con) {
-  sqlTables(con@conn)$TABLE_NAME
+    query <- "SELECT tablename as name FROM _v_table where objtype='TABLE'
+        union SELECT viewname as name FROM _v_view where objtype='VIEW'"
+    res <- send_query(con@conn, query)
+    res[[1]]
 }
 
 #' @export
@@ -165,7 +167,7 @@ db_query_rows.NetezzaConnection <- function(con, sql, ...) {
 
 # Disconnect
 
-db_disconnector <- function(con, name, quiet = FALSE) {
+db_disconnector <- function(con, name, quiet = TRUE) {
   reg.finalizer(environment(), function(...) {
     if (!quiet) {
         message("Auto-disconnecting ", name, " connection ",
@@ -211,6 +213,6 @@ db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ..
 
 # Query
 
-send_query <- function(conn, query, n=-1L, ...) {
-  sqlQuery(conn, query, believeNRows=FALSE)
+send_query <- function(conn, query, ...) {
+  sqlQuery(conn, query, believeNRows=F, as.is=F)
 }
