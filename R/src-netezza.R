@@ -128,7 +128,7 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
 
 #' @export
 db_list_tables.NetezzaConnection <- function(con) {
-    query <- "SELECT tablename as name FROM _v_table where objtype='TABLE'
+    query <- "SELECT tablename as name FROM _v_table where objtype in ('TABLE', 'TEMP TABLE')
         union SELECT viewname as name FROM _v_view where objtype='VIEW'"
     res <- send_query(con@conn, query)
     res[[1]]
