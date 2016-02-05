@@ -159,10 +159,7 @@ db_query_fields.NetezzaConnection <- function(con, sql, ...){
 
 #' @export
 db_query_rows.NetezzaConnection <- function(con, sql, ...) {
-  assertthat::assert_that(assertthat::is.string(sql), is.sql(sql))
-  from <- sql_subquery(con, sql, "master")
-  rows <- build_sql("SELECT count(*) FROM ", from, con=con)
-  as.integer(send_query(con@conn, rows)[[1]])
+    return(NULL)
 }
 
 # Disconnect
