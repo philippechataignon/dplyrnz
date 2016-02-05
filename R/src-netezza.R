@@ -205,6 +205,10 @@ db_analyze.NetezzaConnection <- function(con, table, ...) {
 # Save
 #' @export
 db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ...) {
+    if (db_has_table(con, name)) {
+        stop(paste0("Table ", name, " already exists"))
+    }
+
     ct_sql <- build_sql("CREATE ", if (temporary) sql("TEMPORARY "), "TABLE ",
                         ident(name), " AS (", sql, ")", con = con)
     send_query(con@conn, ct_sql)
