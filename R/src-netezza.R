@@ -59,7 +59,13 @@ tbl.src_netezza <- function(src, from, ...) {
 #' @export
 src_desc.src_netezza <- function(x) {
     info <- x$info
-    paste0("Netezza ODBC - DSN:", info["Data_Source_Name"], " - Host:", info["Server_Name"])
+    paste0("Netezza ODBC [", info["Data_Source_Name"], "]")
+}
+
+#' @export
+dim.tbl_netezza <- function(x) {
+    p <- x$query$ncol()
+    c(NA, p)
 }
 
 #' @export
@@ -115,9 +121,7 @@ Netezza.Query <- R6::R6Class("Netezza.Query",
     },
 
     nrow = function() {
-        if (!is.null(private$.nrow)) return(private$.nrow)
-            private$.nrow <- db_query_rows(self$con, self$sql)
-            private$.nrow
+        NA
     },
 
     ncol = function() {
