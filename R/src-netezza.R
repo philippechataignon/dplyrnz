@@ -71,11 +71,24 @@ dim.tbl_netezza <- function(x) {
 #' @export
 src_translate_env.src_netezza <- function(x) {
     sql_variant(
-        base_scalar,
+        sql_translator(.parent = base_scalar,
+            year = function(x) build_sql("date_part('year',", x, ")"),
+            month = function(x) build_sql("date_part('month',", x, ")"),
+            quarter = function(x) build_sql("date_part('quarter',", x, ")"),
+            week = function(x) build_sql("date_part('week',", x, ")"),
+            day = function(x) build_sql("date_part('day',", x, ")"),
+            hour = function(x) build_sql("date_part('hour',", x, ")"),
+            minute = function(x) build_sql("date_part('minute',", x, ")"),
+            second = function(x) build_sql("date_part('second',", x, ")"),
+            dow = function(x) build_sql("date_part('dow',", x, ")"),
+            doy = function(x) build_sql("date_part('doy',", x, ")"),
+            to_char = sql_prefix("to_char", 2),
+            date_part = sql_prefix("date_part", 2),
+            date_trunc = sql_prefix("date_trunc", 2)
+        ),
         sql_translator(.parent = base_agg,
             n = function() sql("count(*)::integer"),
-            sd = sql_prefix("stddev"),
-            var = sql_prefix("variance")
+            sd = sql_prefix("stddev")
         ),
         base_win
     )
