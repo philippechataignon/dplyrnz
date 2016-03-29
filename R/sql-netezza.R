@@ -65,7 +65,3 @@ sql_escape_ident.NetezzaConnection <- function(con, x) {
 sql_escape_string.NetezzaConnection <- function(con, x) {
     sql_quote(x, "'")
 }
-
-ident_schema_table <- function(tablename) {
-    escape(ident(tablename))
-}
