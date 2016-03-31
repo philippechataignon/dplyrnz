@@ -4,7 +4,7 @@
 \alias{src_netezza}
 \title{Establishes a connection to Netezza and returns a dplyr 'src' object, src_netezza, using RODBC.}
 \usage{
-src_netezza(dsn, db = NULL, uid = NULL, pwd = NULL, ...)
+src_netezza(dsn, ...)
 }
 \arguments{
 \item{dsn}{The name of the ODBC DSN to use for connecting to Netezza. Must be a string.}
