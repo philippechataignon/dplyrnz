@@ -237,5 +237,5 @@ db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ..
 # Query
 
 send_query <- function(conn, query, ...) {
-  sqlQuery(conn, query, believeNRows=F, as.is=F)
+  sqlQuery(conn, query, believeNRows=F, stringsAsFactors = F)
 }
