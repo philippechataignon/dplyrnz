@@ -94,6 +94,19 @@ db_data_type.NetezzaConnection <- function(con, fields, ...) {
     vapply(fields, dbDataType, FUN.VALUE=character(1))
 }
 
+### collect
+
+#' @export
+collect.tbl_netezza <- function(x, ...) {
+  sql <- sql_render(x)
+  res <- dbSendQuery(x$src$con, sql)
+  on.exit(dbClearResult(res))
+
+  out <- dbFetch(res, -1)
+  grouped_df(out, groups(x))
+}
+
+
 ### escape
 
 #' @export
