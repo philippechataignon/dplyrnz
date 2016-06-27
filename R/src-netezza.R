@@ -24,7 +24,8 @@ src_netezza <- function(dsn, ...) {
     }
     con <- dbConnect(RNetezza::Netezza(), dsn=dsn, ...)
     info <- dbGetInfo(con)
-    src_sql("netezza", con = con, info = info, disco = dplyr:::db_disconnector(con, "netezza"))
+    # src_sql("netezza", con = con, info = info, disco = dplyr:::db_disconnector(con, "netezza"))
+    src_sql("netezza", con = con, info = info)
 }
 
 #' @export
@@ -39,11 +40,11 @@ src_desc.src_netezza <- function(x) {
     paste0("Netezza ODBC [", info$sourcename, "]")
 }
 
-#' @export
-dim.tbl_netezza <- function(x) {
-    p <- x$query$ncol()
-    c(NA, p)
-}
+##' @export
+#dim.tbl_netezza <- function(x) {
+#    p <- x$query$ncol()
+#    c(NA, p)
+#}
 
 ### Translate
 
@@ -139,8 +140,5 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
         stop("Could not create table; are the data types specified in Netezza-compatible format?")
     }
     file.remove(tmpfilename)
-    if (analyze) {
-        db_analyze(dest$con, name)
-    }
     tbl(dest, name)
 }
