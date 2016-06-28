@@ -147,7 +147,7 @@ copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
                      " FROM EXTERNAL ", tmpfilename, fields,
                      " USING (delim ',' nullvalue '' QuotedValue DOUBLE remotesource 'ODBC')",
                 con = dest$con)
-    dbGetQuery(dest$con, sql)
+    r <- dbGetQuery(dest$con, sql)
 
     if(!db_has_table(dest$con, name)) {
         stop("Could not create table; are the data types specified in Netezza-compatible format?")
