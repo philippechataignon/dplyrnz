@@ -16,5 +16,5 @@ Imports:
     methods,
     RNetezza
 Depends:
-    dplyr
+    dplyr (>= 0.5.0)
 RoxygenNote: 5.0.1
