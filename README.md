@@ -2,7 +2,11 @@
 
 R package that extends dplyr and provides SQL backend to Netezza (tested on V6.0.8).
 
-This package wraps Netezza ODBC driver and use RODBC package.
+This is a complete rewrite for compatibility with the 0.5.0 release
+of [dplyr](https://github.com/hadley/dplyr).
+
+[dplyr] needs now a DBI compliant database backend. So,
+the package [RNetezza] is a new dependance for dplyrnz. 
 
 #Installation
 
@@ -10,6 +14,7 @@ Install via github:
 
 ```R
 install.packages('devtools')
+devtools::install_github('philippechataignon/RNetezza')
 devtools::install_github('philippechataignon/dplyrnz')
 ```
 
@@ -24,4 +29,8 @@ table <- tbl(nzr, "TABLE_NAME")
 
 #Credits
 
-*  [dplyr](https://github.com/hadley/dplyr)
+*  [dplyr]
+*  [RNetezza]
+
+[dplyr]: https://github.com/hadley/dplyr
+[RNetezza]: https://github.com/philippechataignon/RNetezza

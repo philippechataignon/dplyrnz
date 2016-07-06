@@ -1,9 +1,4 @@
 #A dplyr connector for the Netezza database.
-setClass("NetezzaConnection", representation = representation(conn = "ANY"))
-
-.NetezzaConnection <- function(conn) {
-  new("NetezzaConnection",conn=conn)
-}
 
 #' Establishes a connection to Netezza and returns a dplyr 'src' object, src_netezza, using RODBC.
 #'
@@ -20,34 +15,17 @@ setClass("NetezzaConnection", representation = representation(conn = "ANY"))
 #' @import methods
 #' @import R6
 #' @import assertthat
-#' @import RODBC
+#' @import RNetezza
 #' @import dplyr
-
 #' @export
-src_netezza <- function(dsn, db=NULL, uid=NULL, pwd=NULL, ...) {
-    if (!requireNamespace("assertthat", quietly = TRUE)) {
-        stop("assertthat package required", call. = FALSE)
+src_netezza <- function(dsn, ...) {
+    if (!requireNamespace("RNetezza", quietly = TRUE)) {
+        stop("RNetezza package required to connect to Netezza", call. = FALSE)
     }
-    if (!requireNamespace("RODBC", quietly = TRUE)) {
-        stop("RODBC package required to connect to Netezza ODBC", call. = FALSE)
-    }
-    assertthat::assert_that(assertthat::is.string(dsn))
-
-    st <- paste0("DSN=", dsn)
-    if (!is.null(uid)) {
-        st <- paste0(st, ";UID=", uid)
-    }
-    if (!is.null(pwd)) {
-        st <- paste0(st, ";PWD=", pwd)
-    }
-    if (!is.null(db)) {
-        st <- paste0(st, ";Database=", db)
-    }
-
-    conn <- RODBC::odbcDriverConnect(st, ...)
-    info <- RODBC::odbcGetInfo(conn)
-    con <- .NetezzaConnection(conn=conn)
-    src_sql("netezza", con = con, info = info, disco = db_disconnector(con, "netezza"))
+    con <- dbConnect(RNetezza::Netezza(), dsn=dsn, ...)
+    info <- dbGetInfo(con)
+    # src_sql("netezza", con = con, info = info, disco = dplyr:::db_disconnector(con, "netezza"))
+    src_sql("netezza", con = con, info = info)
 }
 
 #' @export
@@ -59,17 +37,19 @@ tbl.src_netezza <- function(src, from, ...) {
 #' @export
 src_desc.src_netezza <- function(x) {
     info <- x$info
-    paste0("Netezza ODBC [", info["Data_Source_Name"], "]")
+    paste0("Netezza ODBC [", info$sourcename, "]")
 }
 
-#' @export
-dim.tbl_netezza <- function(x) {
-    p <- x$query$ncol()
-    c(NA, p)
-}
+##' @export
+#dim.tbl_netezza <- function(x) {
+#    p <- x$query$ncol()
+#    c(NA, p)
+#}
+
+### Translate
 
 #' @export
-src_translate_env.src_netezza <- function(x) {
+sql_translate_env.NetezzaConnection <- function(x) {
     sql_variant(
         sql_translator(.parent = base_scalar,
             year = function(x) build_sql("date_part('year',", x, ")"),
@@ -93,149 +73,84 @@ src_translate_env.src_netezza <- function(x) {
         base_win
     )
 }
+###
 
-#' @export
-query.NetezzaConnection <- function(con, sql, .vars) {
-    assertthat::assert_that(assertthat::is.string(sql))
-    Netezza.Query$new(con, sql(sql), .vars)
-}
-
-Netezza.Query <- R6::R6Class("Netezza.Query",
-  private = list(
-    .nrow = NULL,
-    .vars = NULL
-  ),
-  public = list(
-    con = NULL,
-    sql = NULL,
-
-    initialize = function(con, sql, vars) {
-      self$con <- con
-      self$sql <- sql
-      private$.vars <- vars
-    },
-
-    print = function(...) {
-      cat("<Query> ", self$sql, "\n", sep = "")
-      print(self$con)
-    },
-
-    fetch = function(n = -1L) {
-        send_query(self$con@conn, self$sql)
-    },
-
-    fetch_paged = function(chunk_size = 1e4, callback) {
-        warning("This package does not support fetched_paged for Netezza")
-        invisible(TRUE)
-    },
-
-    vars = function() {
-      private$.vars
-    },
-
-    nrow = function() {
-        NA
-    },
-
-    ncol = function() {
-        length(self$vars())
+dbDataType <- function(column, ...) {
+    if (is.integer(column))
+        return("INTEGER")
+    if (is.numeric(column))
+        return("DOUBLE")
+    if (is.character(column) || is.factor(column)) {
+        if (is.factor(column))
+            column <- levels(column)
+        len  <- max(nchar(column))
+        type <- ifelse(any(Encoding(column) == "UTF-8"), "NVARCHAR", "VARCHAR")
+        return(paste(type, "(", len, ")", sep=''))
     }
-  )
-)
-
-#' @export
-db_list_tables.NetezzaConnection <- function(con) {
-    query <- "SELECT tablename as name FROM _v_table where objtype in ('TABLE', 'TEMP TABLE')
-        union SELECT viewname as name FROM _v_view where objtype='VIEW'
-        union SELECT synonym_name as name FROM _v_synonym where objtype='SYNONYM'
-    "
-    res <- send_query(con@conn, query)
-    res[[1]]
+    stop("data type '", class(column), "' is not handled yet")
 }
 
-#' @export
-db_list_tables.src_netezza <- function(src) {
-  db_list_tables(src$con)
+db_data_type.NetezzaConnection <- function(con, fields, ...) {
+    vapply(fields, dbDataType, FUN.VALUE=character(1))
 }
 
-#' @export
-db_has_table.src_netezza <- function(src, table) {
-  db_has_table(src$con, table)
-}
+### collect
 
 #' @export
-db_has_table.NetezzaConnection <- function(con, table) {
-  table %in% db_list_tables(con)
+collect.tbl_netezza <- function(x, ...) {
+  sql <- sql_render(x)
+  res <- dbSendQuery(x$src$con, sql)
+  on.exit(dbClearResult(res))
+
+  out <- dbFetch(res, -1)
+  grouped_df(out, groups(x))
 }
+
+
+### escape
 
 #' @export
-db_query_fields.NetezzaConnection <- function(con, sql, ...){
-  assertthat::assert_that(assertthat::is.string(sql), is.sql(sql))
-  fields <- build_sql("SELECT * FROM ", sql, " LIMIT 0")
-  qry <- send_query(con@conn, fields)
-  names(qry)
+sql_escape_ident.NetezzaConnection <- function(con, x) {
+    sql_quote(x, '"')
 }
+#' @export
+sql_escape_string.NetezzaConnection <- function(con, x) {
+    sql_quote(x, "'")
+}
+
 
 #' @export
-db_query_rows.NetezzaConnection <- function(con, sql, ...) {
-  assertthat::assert_that(assertthat::is.string(sql), is.sql(sql))
-  from <- sql_subquery(con, sql, "master")
-  rows <- build_sql("SELECT count(*) FROM ", from, con=con)
-  as.integer(send_query(con@conn, rows)[[1]])
-}
-
-# Disconnect
-
-db_disconnector <- function(con, name, quiet = TRUE) {
-  reg.finalizer(environment(), function(...) {
-    if (!quiet) {
-        message("Auto-disconnecting ", name, " connection ",
-            "(", paste(con@conn, collapse = ", "), ")")
+copy_to.src_netezza <- function(dest, df, name = deparse(substitute(df)),
+            temporary=TRUE, indexes=NULL, analyze=TRUE, replace=FALSE, ...) {
+    if (db_has_table(dest$con, name)) {
+        if (replace) {
+            warning(name, " already exists and replaced.")
+            db_drop_table(dest$con, name)
+        } else {
+            stop(name, " already exists")
+        }
     }
-    odbcClose(con@conn)
-    })
-  environment()
-}
+    types <- db_data_type(dest$con, df)
+    names(types) <- names(df)
 
-# Explains queries
-#' @export
-db_explain.NetezzaConnection <- function(con, sql, ...) {
-  exsql <- build_sql("EXPLAIN ", sql, con = con)
-  output <- send_query(con@conn, exsql)
-  output <- apply(output,1,function(x){
-    if(substring(x,1,1) == "|") x = paste0("\n",x)
-    if(x == "") x = "\n"
-    x
-  })
-}
+    tmpfilename = paste0("/tmp/", "dplyr_", name, ".csv")
+    write.table(df, file=tmpfilename, sep=",", row.names=FALSE, col.names = FALSE, quote=T, na='')
 
-# Analyse
-#' @export
-db_analyze.src_netezza <- function(src, table, ...) {
-  db_analyze(src$con, table, ...)
-}
+    field_names <- escape(ident(names(types)), collapse = NULL, con = dest$con)
+    fields <- dplyr:::sql_vector(paste0(field_names, " ", types), parens = TRUE,
+                               collapse = ", ", con = dest$con)
+    fields_var <- dplyr:::sql_vector(field_names, parens = F,
+                               collapse = ", ", con = dest$con)
+    sql <- build_sql("CREATE ", if (temporary) sql("TEMPORARY "), "TABLE ",
+                     ident(name), " AS SELECT ", fields_var,
+                     " FROM EXTERNAL ", tmpfilename, fields,
+                     " USING (delim ',' nullvalue '' QuotedValue DOUBLE remotesource 'ODBC')",
+                con = dest$con)
+    r <- dbGetQuery(dest$con, sql)
 
-#' @export
-db_analyze.NetezzaConnection <- function(con, table, ...) {
-  sql <- build_sql("GENERATE STATISTICS ON ", ident(table), con=con)
-  send_query(con@conn, sql)
-}
-
-# Save
-#' @export
-db_save_query.NetezzaConnection <- function(con, sql, name, temporary = TRUE, ...) {
-    if (db_has_table(con, name)) {
-        stop(paste0("Table ", name, " already exists"))
+    if(!db_has_table(dest$con, name)) {
+        stop("Could not create table; are the data types specified in Netezza-compatible format?")
     }
-
-    ct_sql <- build_sql("CREATE ", if (temporary) sql("TEMPORARY "), "TABLE ",
-                        ident(name), " AS (", sql, ")", con = con)
-    send_query(con@conn, ct_sql)
-    name
-}
-
-# Query
-
-send_query <- function(conn, query, ...) {
-  sqlQuery(conn, query, believeNRows=F, stringsAsFactors = F)
+    file.remove(tmpfilename)
+    tbl(dest, name)
 }
