@@ -6,7 +6,11 @@ This is a complete rewrite for compatibility with the 0.5.0 release
 of [dplyr](https://github.com/hadley/dplyr).
 
 [dplyr] needs now a DBI compliant database backend. So,
-the package [RNetezza] is a new dependance for dplyrnz. 
+the package [RNetezza] is a new dependance for dplyrnz.
+
+# Note
+
+I have no longer access to a Netezza database. **This package is unmaintained**.
 
 #Installation
 
