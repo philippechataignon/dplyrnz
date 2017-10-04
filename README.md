@@ -12,7 +12,7 @@ the package [RNetezza] is a new dependance for dplyrnz.
 
 I have no longer access to a Netezza database. **This package is unmaintained**.
 
-#Installation
+# Installation
 
 Install via github:
 
@@ -22,7 +22,7 @@ devtools::install_github('philippechataignon/RNetezza')
 devtools::install_github('philippechataignon/dplyrnz')
 ```
 
-#Usage
+# Usage
 
 ```R
 library(dplyrnz)
@@ -31,7 +31,7 @@ nzr <- src_netezza('DSN')
 table <- tbl(nzr, "TABLE_NAME")
 ```
 
-#Credits
+# Credits
 
 *  [dplyr]
 *  [RNetezza]
